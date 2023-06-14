@@ -1,3 +1,29 @@
+Project overview:
+Gets current price for specified crypto and sends an email alert if price is above or below specified price.
+
+Installation:
+See related crypto-price-alert-tf project for a simple Terraform installation of the required AWS services.
+
+Uses: 
+
+Usage:
+
+Configuration:
+
+Documentation:
+
+Examples:
+
+Contributing:
+
+License:
+
+Contact:
+
+Acknowledgements:
+
+
+
 Steps:
 - Create lambda function, create lambda function exec IAM role
 - Create SNS topic, create SNS subscription with email address

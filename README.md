@@ -2,7 +2,7 @@ Project overview:
 Gets current price for specified crypto and sends an email alert if price is above or below specified price.
 
 Installation:
-See related crypto-price-alert-tf project for a simple Terraform installation of the required AWS services.
+See related crypto-price-alert-tf project for a simple Terraform installation of the required AWS resources.
 
 Uses: 
 

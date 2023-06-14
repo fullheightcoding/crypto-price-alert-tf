@@ -60,7 +60,13 @@ resource "aws_iam_policy" "lambda_execution_policy" {
         Effect   = "Allow"
         Action   = "ssm:GetParameter"
         Resource = aws_ssm_parameter.crypto_price_alert_sns_topic_arn.arn
-      }
+      },
+      #new to fix issues?
+      {
+        "Effect": "Allow",
+        "Action": "lambda:InvokeFunction",
+        "Resource": aws_lambda_function.crypto_price_alert_lambda.arn
+      }      
     ]
   })
 }
@@ -98,73 +104,83 @@ resource "aws_lambda_permission" "sns_publish_permission" {
   source_arn    = aws_sns_topic.crypto_price_alert_topic.arn
 }
 
-resource "aws_cloudwatch_event_rule" "crypto_price_alert_cronjob_bitcoin" {
-  name                = "CryptoPriceAlertCronJob-Bitcoin"
-  schedule_expression = "cron(30 7 * * ? *)"  # Runs at 5:30 PM AEST (7:30 AM UTC)
-  is_enabled          = true
-
-  event_pattern = jsonencode({
-    source      = ["aws.events"],
-    detail_type = ["Scheduled Event"],
-    detail      = {
-      threshold_coin       = ["bitcoin"],
-      threshold_price      = [10000],
-      threshold_direction  = ["less_than"]
-    }
-  })
-}
-
-resource "aws_cloudwatch_event_rule" "crypto_price_alert_cronjob_ethereum" {
-  name                = "CryptoPriceAlertCronJob-Ethereum"
-  schedule_expression = "cron(0 1 * * ? *)"  # Runs at 1PM AEST
-  is_enabled          = true
-
-  event_pattern = jsonencode({
-    source      = ["aws.events"],
-    detail_type = ["Scheduled Event"],
-    detail      = {
-      threshold_coin       = ["ethereum"],
-      threshold_price      = [1000],
-      threshold_direction  = ["less_than"]
-    }
-  })
-}
-
-resource "aws_cloudwatch_event_rule" "crypto_price_alert_cronjob_solana" {
-  name                = "CryptoPriceAlertCronJob-Solana"
-  schedule_expression = "cron(0 1 * * ? *)"  # Runs at 1PM AEST
-  is_enabled          = true
-
-  event_pattern = jsonencode({
-    source      = ["aws.events"],
-    detail_type = ["Scheduled Event"],
-    detail      = {
-      threshold_coin       = ["solana"],
-      threshold_price      = [10],
-      threshold_direction  = ["less_than"]
-    }
-  })
-}
-
-resource "aws_cloudwatch_event_target" "crypto_price_alert_target_bitcoin" {
-  rule      = aws_cloudwatch_event_rule.crypto_price_alert_cronjob_bitcoin.name
-  arn       = aws_lambda_function.crypto_price_alert_lambda.arn
-  target_id = "CryptoPriceAlertTarget-Bitcoin"
-}
-
-resource "aws_cloudwatch_event_target" "crypto_price_alert_target_ethereum" {
-  rule      = aws_cloudwatch_event_rule.crypto_price_alert_cronjob_ethereum.name
-  arn       = aws_lambda_function.crypto_price_alert_lambda.arn
-  target_id = "CryptoPriceAlertTarget-Ethereum"
-}
-
-resource "aws_cloudwatch_event_target" "crypto_price_alert_target_solana" {
-  rule      = aws_cloudwatch_event_rule.crypto_price_alert_cronjob_solana.name
-  arn       = aws_lambda_function.crypto_price_alert_lambda.arn
-  target_id = "CryptoPriceAlertTarget-Solana"
-}
-
 resource "aws_cloudwatch_log_group" "crypto_price_alert_logs" {
   name = "/aws/lambda/${aws_lambda_function.crypto_price_alert_lambda.function_name}"
   retention_in_days = 7
+}
+
+#new section to correctly add bitcoin, ethereum, and solana scheduled event that runs every hours at UTC 2:00AM
+resource "aws_cloudwatch_event_rule" "eventbridge_schedule_bitcoin" {
+  name                = "CryptoPriceAlert-ScheduleCronJob24Hours-Bitcoin"
+  description         = "EventBridge schedule to trigger Lambda function"
+  schedule_expression = "cron(0 2 * * ? *)"  # Starts today at 2:00 AM UTC and runs every 24 hours
+}
+
+resource "aws_cloudwatch_event_target" "lambda_target_bitcoin" {
+  rule      = aws_cloudwatch_event_rule.eventbridge_schedule_bitcoin.name
+  arn       = aws_lambda_function.crypto_price_alert_lambda.arn
+  input_transformer {
+    input_paths = {
+      threshold_coin        = "$.detail.threshold_coin",
+      threshold_price       = "$.detail.threshold_price",
+      threshold_direction   = "$.detail.threshold_direction"
+    }
+    input_template = <<EOF
+{
+  "threshold_coin": "bitcoin",
+  "threshold_price": 20000,
+  "threshold_direction": "less_than"
+}
+EOF
+  }
+}
+
+resource "aws_cloudwatch_event_rule" "eventbridge_schedule_ethereum" {
+  name                = "CryptoPriceAlert-ScheduleCronJob24Hours-Ethereum"
+  description         = "EventBridge schedule to trigger Lambda function"
+  schedule_expression = "cron(0 2 * * ? *)"  # Starts today at 2:00 AM UTC and runs every 24 hours
+}
+
+resource "aws_cloudwatch_event_target" "lambda_target_ethereum" {
+  rule      = aws_cloudwatch_event_rule.eventbridge_schedule_ethereum.name
+  arn       = aws_lambda_function.crypto_price_alert_lambda.arn
+  input_transformer {
+    input_paths = {
+      threshold_coin        = "$.detail.threshold_coin",
+      threshold_price       = "$.detail.threshold_price",
+      threshold_direction   = "$.detail.threshold_direction"
+    }
+    input_template = <<EOF
+{
+  "threshold_coin": "ethereum",
+  "threshold_price": 2000,
+  "threshold_direction": "less_than"
+}
+EOF
+  }
+}
+
+resource "aws_cloudwatch_event_rule" "eventbridge_schedule_solana" {
+  name                = "CryptoPriceAlert-ScheduleCronJob24Hours-Solana"
+  description         = "EventBridge schedule to trigger Lambda function"
+  schedule_expression = "cron(0 2 * * ? *)"  # Starts today at 2:00 AM UTC and runs every 24 hours
+}
+
+resource "aws_cloudwatch_event_target" "lambda_target_solana" {
+  rule      = aws_cloudwatch_event_rule.eventbridge_schedule_solana.name
+  arn       = aws_lambda_function.crypto_price_alert_lambda.arn
+  input_transformer {
+    input_paths = {
+      threshold_coin        = "$.detail.threshold_coin",
+      threshold_price       = "$.detail.threshold_price",
+      threshold_direction   = "$.detail.threshold_direction"
+    }
+    input_template = <<EOF
+{
+  "threshold_coin": "solana",
+  "threshold_price": 10,
+  "threshold_direction": "less_than"
+}
+EOF
+  }
 }

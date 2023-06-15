@@ -113,74 +113,47 @@ resource "aws_cloudwatch_log_group" "crypto_price_alert_logs" {
 resource "aws_cloudwatch_event_rule" "eventbridge_schedule_bitcoin" {
   name                = "CryptoPriceAlert-ScheduleCronJob24Hours-Bitcoin"
   description         = "EventBridge schedule to trigger Lambda function"
-  schedule_expression = "cron(0 2 * * ? *)"  # Starts today at 2:00 AM UTC and runs every 24 hours
+  schedule_expression = "cron(0 3 * * ? *)"  # Starts today at 2:00 AM UTC and runs every 24 hours
 }
 
 resource "aws_cloudwatch_event_target" "lambda_target_bitcoin" {
-  rule      = aws_cloudwatch_event_rule.eventbridge_schedule_bitcoin.name
-  arn       = aws_lambda_function.crypto_price_alert_lambda.arn
-  input_transformer {
-    input_paths = {
-      threshold_coin        = "$.detail.threshold_coin",
-      threshold_price       = "$.detail.threshold_price",
-      threshold_direction   = "$.detail.threshold_direction"
-    }
-    input_template = <<EOF
-{
-  "threshold_coin": "bitcoin",
-  "threshold_price": 20000,
-  "threshold_direction": "less_than"
-}
-EOF
-  }
+  rule = aws_cloudwatch_event_rule.eventbridge_schedule_bitcoin.name
+  arn  = aws_lambda_function.crypto_price_alert_lambda.arn
+  input = jsonencode({
+    threshold_coin      = "bitcoin"
+    threshold_price     = 20000
+    threshold_direction = "less_than"
+  })
 }
 
 resource "aws_cloudwatch_event_rule" "eventbridge_schedule_ethereum" {
   name                = "CryptoPriceAlert-ScheduleCronJob24Hours-Ethereum"
   description         = "EventBridge schedule to trigger Lambda function"
-  schedule_expression = "cron(0 2 * * ? *)"  # Starts today at 2:00 AM UTC and runs every 24 hours
+  schedule_expression = "cron(0 3 * * ? *)"  # Starts today at 2:00 AM UTC and runs every 24 hours
 }
 
 resource "aws_cloudwatch_event_target" "lambda_target_ethereum" {
-  rule      = aws_cloudwatch_event_rule.eventbridge_schedule_ethereum.name
-  arn       = aws_lambda_function.crypto_price_alert_lambda.arn
-  input_transformer {
-    input_paths = {
-      threshold_coin        = "$.detail.threshold_coin",
-      threshold_price       = "$.detail.threshold_price",
-      threshold_direction   = "$.detail.threshold_direction"
-    }
-    input_template = <<EOF
-{
-  "threshold_coin": "ethereum",
-  "threshold_price": 2000,
-  "threshold_direction": "less_than"
-}
-EOF
-  }
+  rule = aws_cloudwatch_event_rule.eventbridge_schedule_ethereum.name
+  arn  = aws_lambda_function.crypto_price_alert_lambda.arn
+  input = jsonencode({
+    threshold_coin      = "ethereum"
+    threshold_price     = 1000
+    threshold_direction = "less_than"
+  })
 }
 
 resource "aws_cloudwatch_event_rule" "eventbridge_schedule_solana" {
   name                = "CryptoPriceAlert-ScheduleCronJob24Hours-Solana"
   description         = "EventBridge schedule to trigger Lambda function"
-  schedule_expression = "cron(0 2 * * ? *)"  # Starts today at 2:00 AM UTC and runs every 24 hours
+  schedule_expression = "cron(0 3 * * ? *)"  # Starts today at 2:00 AM UTC and runs every 24 hours
 }
 
 resource "aws_cloudwatch_event_target" "lambda_target_solana" {
-  rule      = aws_cloudwatch_event_rule.eventbridge_schedule_solana.name
-  arn       = aws_lambda_function.crypto_price_alert_lambda.arn
-  input_transformer {
-    input_paths = {
-      threshold_coin        = "$.detail.threshold_coin",
-      threshold_price       = "$.detail.threshold_price",
-      threshold_direction   = "$.detail.threshold_direction"
-    }
-    input_template = <<EOF
-{
-  "threshold_coin": "solana",
-  "threshold_price": 10,
-  "threshold_direction": "less_than"
-}
-EOF
-  }
+  rule = aws_cloudwatch_event_rule.eventbridge_schedule_solana.name
+  arn  = aws_lambda_function.crypto_price_alert_lambda.arn
+  input = jsonencode({
+    threshold_coin      = "solana"
+    threshold_price     = 10
+    threshold_direction = "less_than"
+  })
 }

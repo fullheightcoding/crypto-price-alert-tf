@@ -113,7 +113,7 @@ resource "aws_cloudwatch_log_group" "crypto_price_alert_logs" {
 resource "aws_cloudwatch_event_rule" "eventbridge_schedule_bitcoin" {
   name                = "CryptoPriceAlert-ScheduleCronJob24Hours-Bitcoin"
   description         = "EventBridge schedule to trigger Lambda function"
-  schedule_expression = "cron(0 3 * * ? *)"  # Starts today at 2:00 AM UTC and runs every 24 hours
+  schedule_expression = "cron(0 2 * * ? *)"  # Starts today at 2:00 AM UTC and runs every 24 hours
 }
 
 resource "aws_cloudwatch_event_target" "lambda_target_bitcoin" {
@@ -129,7 +129,7 @@ resource "aws_cloudwatch_event_target" "lambda_target_bitcoin" {
 resource "aws_cloudwatch_event_rule" "eventbridge_schedule_ethereum" {
   name                = "CryptoPriceAlert-ScheduleCronJob24Hours-Ethereum"
   description         = "EventBridge schedule to trigger Lambda function"
-  schedule_expression = "cron(0 3 * * ? *)"  # Starts today at 2:00 AM UTC and runs every 24 hours
+  schedule_expression = "cron(0 2 * * ? *)"  # Starts today at 2:00 AM UTC and runs every 24 hours
 }
 
 resource "aws_cloudwatch_event_target" "lambda_target_ethereum" {
@@ -145,7 +145,7 @@ resource "aws_cloudwatch_event_target" "lambda_target_ethereum" {
 resource "aws_cloudwatch_event_rule" "eventbridge_schedule_solana" {
   name                = "CryptoPriceAlert-ScheduleCronJob24Hours-Solana"
   description         = "EventBridge schedule to trigger Lambda function"
-  schedule_expression = "cron(0 3 * * ? *)"  # Starts today at 2:00 AM UTC and runs every 24 hours
+  schedule_expression = "cron(0 2 * * ? *)"  # Starts today at 2:00 AM UTC and runs every 24 hours
 }
 
 resource "aws_cloudwatch_event_target" "lambda_target_solana" {

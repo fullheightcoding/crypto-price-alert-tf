@@ -168,7 +168,7 @@ resource "aws_cloudwatch_event_target" "lambda_target_doge" {
   rule = aws_cloudwatch_event_rule.eventbridge_schedule_doge.name
   arn  = aws_lambda_function.crypto_price_alert_lambda.arn
   input = jsonencode({
-    threshold_coin      = "doge"
+    threshold_coin      = "dogecoin"
     threshold_price     = 0.02
     threshold_direction = "less_than"
   })

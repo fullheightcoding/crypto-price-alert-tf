@@ -157,3 +157,19 @@ resource "aws_cloudwatch_event_target" "lambda_target_solana" {
     threshold_direction = "less_than"
   })
 }
+
+resource "aws_cloudwatch_event_rule" "eventbridge_schedule_doge" {
+  name                = "CryptoPriceAlert-ScheduleCronJob24Hours-Doge"
+  description         = "EventBridge schedule to trigger Lambda function"
+  schedule_expression = "cron(0 2 * * ? *)"  # Starts today at 2:00 AM UTC and runs every 24 hours
+}
+
+resource "aws_cloudwatch_event_target" "lambda_target_doge" {
+  rule = aws_cloudwatch_event_rule.eventbridge_schedule_doge.name
+  arn  = aws_lambda_function.crypto_price_alert_lambda.arn
+  input = jsonencode({
+    threshold_coin      = "doge"
+    threshold_price     = 0.02
+    threshold_direction = "less_than"
+  })
+}

@@ -81,8 +81,8 @@ resource "aws_iam_policy" "lambda_execution_policy_dyanamodb" {
   description = "Policy for the CryptoPriceAlert Lambda function"
 
   policy = jsonencode({
-    Version: "2012-10-17",
-    Statement: [
+    Version = "2012-10-17",
+    Statement = [
       {
         Effect = "Allow"
         Action = "dynamodb:PutItem"

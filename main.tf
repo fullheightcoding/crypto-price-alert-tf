@@ -61,11 +61,18 @@ resource "aws_iam_policy" "lambda_execution_policy" {
         Action   = "ssm:GetParameter"
         Resource = aws_ssm_parameter.crypto_price_alert_sns_topic_arn.arn
       },
-      #new to fix issues?
       {
-        "Effect": "Allow",
-        "Action": "lambda:InvokeFunction",
-        "Resource": aws_lambda_function.crypto_price_alert_lambda.arn
+        Effect   = "Allow"
+        Action   = [
+          "dynamodb:PutItem",
+          "dynamodb:UpdateItem"
+        ]
+        Resource = aws_dynamodb_table.crypto_prices.arn
+      },
+      {
+        Effect   = "Allow"
+        Action   = "lambda:InvokeFunction"
+        Resource = aws_lambda_function.crypto_price_alert_lambda.arn
       }      
     ]
   })
@@ -158,18 +165,35 @@ resource "aws_cloudwatch_event_target" "lambda_target_solana" {
   })
 }
 
-resource "aws_cloudwatch_event_rule" "eventbridge_schedule_doge" {
-  name                = "CryptoPriceAlert-ScheduleCronJob24Hours-Doge"
-  description         = "EventBridge schedule to trigger Lambda function"
-  schedule_expression = "cron(0 2 * * ? *)"  # Starts today at 2:00 AM UTC and runs every 24 hours
-}
+resource "aws_dynamodb_table" "crypto_prices" {
+  name           = "CryptoPrices"
+  billing_mode   = "PAY_PER_REQUEST"
+  hash_key       = "CryptoSymbol"
 
-resource "aws_cloudwatch_event_target" "lambda_target_doge" {
-  rule = aws_cloudwatch_event_rule.eventbridge_schedule_doge.name
-  arn  = aws_lambda_function.crypto_price_alert_lambda.arn
-  input = jsonencode({
-    threshold_coin      = "dogecoin"
-    threshold_price     = 0.02
-    threshold_direction = "less_than"
-  })
+  attribute {
+    name = "CryptoSymbol"
+    type = "S"
+  }
+
+  attribute {
+    name = "Date"
+    type = "S"
+  }
+
+  attribute {
+    name = "Price"
+    type = "N"
+  }
+
+  global_secondary_index {
+    name               = "DateIndex"
+    hash_key           = "Date"
+    projection_type    = "ALL"
+  }
+
+  global_secondary_index {
+    name               = "PriceIndex"
+    hash_key           = "Price"
+    projection_type    = "ALL"
+  }
 }

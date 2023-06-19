@@ -63,14 +63,6 @@ resource "aws_iam_policy" "lambda_execution_policy" {
       },
       {
         Effect   = "Allow"
-        Action   = [
-          "dynamodb:PutItem",
-          "dynamodb:UpdateItem"
-        ]
-        Resource = aws_dynamodb_table.crypto_prices.arn
-      },
-      {
-        Effect   = "Allow"
         Action   = "lambda:InvokeFunction"
         Resource = aws_lambda_function.crypto_price_alert_lambda.arn
       }      
@@ -80,6 +72,30 @@ resource "aws_iam_policy" "lambda_execution_policy" {
 
 resource "aws_iam_role_policy_attachment" "lambda_execution_policy_attachment" {
   policy_arn = aws_iam_policy.lambda_execution_policy.arn
+  role       = aws_iam_role.lambda_execution_role.name
+}
+
+#lambda dynamodb policy
+resource "aws_iam_policy" "lambda_execution_policy_dyanamodb" {
+  name        = "CryptoPriceAlertLambdaDynamoDBPolicy"
+  description = "Policy for the CryptoPriceAlert Lambda function"
+
+  policy = jsonencode({
+    Version: "2012-10-17",
+    Statement: [
+        {
+            Effect: "Allow",
+            Action: [
+                "dynamodb:PutItem"
+            ],
+            Resource: aws_dynamodb_table.crypto_prices.arn
+        }
+    ]
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "lambda_execution_dynamodb_policy_attachment" {
+  policy_arn = aws_iam_policy.lambda_execution_policy_dyanamodb.arn
   role       = aws_iam_role.lambda_execution_role.name
 }
 
@@ -173,27 +189,5 @@ resource "aws_dynamodb_table" "crypto_prices" {
   attribute {
     name = "CryptoSymbol"
     type = "S"
-  }
-
-  attribute {
-    name = "Date"
-    type = "S"
-  }
-
-  attribute {
-    name = "Price"
-    type = "N"
-  }
-
-  global_secondary_index {
-    name               = "DateIndex"
-    hash_key           = "Date"
-    projection_type    = "ALL"
-  }
-
-  global_secondary_index {
-    name               = "PriceIndex"
-    hash_key           = "Price"
-    projection_type    = "ALL"
   }
 }

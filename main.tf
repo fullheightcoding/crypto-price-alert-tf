@@ -83,13 +83,11 @@ resource "aws_iam_policy" "lambda_execution_policy_dyanamodb" {
   policy = jsonencode({
     Version: "2012-10-17",
     Statement: [
-        {
-            Effect: "Allow",
-            Action: [
-                "dynamodb:PutItem"
-            ],
-            Resource: aws_dynamodb_table.crypto_prices.arn
-        }
+      {
+        Effect = "Allow"
+        Action = "dynamodb:PutItem"
+        Resource = aws_dynamodb_table.crypto_prices.arn
+      }
     ]
   })
 }

@@ -183,9 +183,15 @@ resource "aws_dynamodb_table" "crypto_prices" {
   name           = "CryptoPrices"
   billing_mode   = "PAY_PER_REQUEST"
   hash_key       = "CryptoSymbol"
+  range_key      = "Date"
 
   attribute {
     name = "CryptoSymbol"
+    type = "S"
+  }
+
+  attribute {
+    name = "Date"
     type = "S"
   }
 }

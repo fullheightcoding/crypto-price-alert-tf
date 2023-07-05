@@ -1,9 +1,9 @@
 resource "aws_lambda_function" "crypto_price_alert_lambda" {
-  function_name         = "CryptoPriceAlert"
+  function_name         = "CryptoPriceAlert-DataCollection"
   runtime               = "python3.10"
-  handler               = "crypto_price_alert_lambda.lambda_handler"
-  filename              = "..\\..\\python-project\\crypto-price-alert-lambda\\crypto_price_alert_lambda.zip"
-  source_code_hash      = filebase64sha256("..\\..\\python-project\\crypto-price-alert-lambda\\crypto_price_alert_lambda.zip")
+  handler               = "CryptoPriceAlert-DataCollection.lambda_handler"
+  filename              = "..\\..\\python-project\\crypto-price-alert-lambda\\crypto-price-alert-datacollection\\CryptoPriceAlert-DataCollection.zip"
+  source_code_hash      = filebase64sha256("..\\..\\python-project\\crypto-price-alert-lambda\\crypto-price-alert-datacollection\\CryptoPriceAlert-DataCollection.zip")
   role                  = aws_iam_role.lambda_execution_role.arn
   publish               = true
   timeout               = 10
@@ -140,6 +140,7 @@ resource "aws_cloudwatch_event_rule" "eventbridge_schedule_bitcoin" {
 resource "aws_cloudwatch_event_target" "lambda_target_bitcoin" {
   rule = aws_cloudwatch_event_rule.eventbridge_schedule_bitcoin.name
   arn  = aws_lambda_function.crypto_price_alert_lambda.arn
+  target_id  = uuid()  # Generate a unique Target ID
   input = jsonencode({
     threshold_coin      = "bitcoin"
     threshold_price     = 20000
@@ -156,6 +157,7 @@ resource "aws_cloudwatch_event_rule" "eventbridge_schedule_ethereum" {
 resource "aws_cloudwatch_event_target" "lambda_target_ethereum" {
   rule = aws_cloudwatch_event_rule.eventbridge_schedule_ethereum.name
   arn  = aws_lambda_function.crypto_price_alert_lambda.arn
+  target_id = "lambda_target_ethereum"
   input = jsonencode({
     threshold_coin      = "ethereum"
     threshold_price     = 1000
@@ -172,6 +174,7 @@ resource "aws_cloudwatch_event_rule" "eventbridge_schedule_solana" {
 resource "aws_cloudwatch_event_target" "lambda_target_solana" {
   rule = aws_cloudwatch_event_rule.eventbridge_schedule_solana.name
   arn  = aws_lambda_function.crypto_price_alert_lambda.arn
+  target_id = "lambda_target_solana"
   input = jsonencode({
     threshold_coin      = "solana"
     threshold_price     = 10
@@ -193,5 +196,10 @@ resource "aws_dynamodb_table" "crypto_prices" {
   attribute {
     name = "Date"
     type = "S"
+  }
+
+  ttl {
+    attribute_name = "DateTTL"
+    enabled        = true
   }
 }
